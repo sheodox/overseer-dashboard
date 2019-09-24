@@ -12,4 +12,6 @@ class ConfigReader:
             sys.exit(-1)
 
     def get(self, name):
+        if name not in self.config:
+            print(f'config error - tried to access "{name}" but it couldn\'t be found')
         return self.config[name]
