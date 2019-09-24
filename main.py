@@ -21,10 +21,10 @@ class Dashboard(QWidget):
     def create_lights_ui(self):
         self.layout.addWidget(QLabel('Lights'))
 
-        def create_light_button(light):
-            button = QPushButton(light['name'])
+        def create_light_button(l):
+            button = QPushButton(l['name'])
 
-            button.clicked.connect(lambda: self.lights.toggle(light['id']))
+            button.clicked.connect(lambda: self.lights.toggle(l['id']))
             self.layout.addWidget(button)
 
         for light in self.lights.get_lights():
@@ -37,11 +37,13 @@ class Dashboard(QWidget):
         self.layout.addWidget(QLabel(f"Weather for {self.weather.get_location_name()}"))
         self.layout.addWidget(QLabel(f"last updated at {self.weather.get_updated_time()}"))
         self.layout.addLayout(weather_layout)
+        today = self.weather.get_todays_forecast()
+        self.layout.addWidget(QLabel(f"Now {today['temp']} {today['weather']} ({today['low']} - {today['high']})"))
 
-        # a lot of periods show up, just show a few for now
-        # for period in [p for index, p in enumerate(self.weather.get_periods()) if index < max_periods]:
-        for period in self.weather.get_periods()[:max_periods]:
-            self.layout.addWidget(QLabel(f'{period["name"]} {period["temperature"]}°'))
+        # skip the current day
+        for day in self.weather.get_days()[1:]:
+            print(day)
+            self.layout.addWidget(QLabel(f'{day["dt-pretty"]} {day["low"]}-{day["high"]}'))
 
 
 if __name__ == '__main__':
