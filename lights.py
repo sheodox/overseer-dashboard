@@ -1,3 +1,5 @@
+import sys
+
 import easy_requests
 from config_reader import ConfigReader
 
@@ -16,6 +18,10 @@ class Lights:
     def refresh(self, data=None):
         if not data:
             data = easy_requests.get(f'{self.overseer_url}lights/info')
+
+        if 'error' in data:
+            self.log('error retrieving lights information, does overseer trust this device?')
+            sys.exit(-1)
 
         self.log(f'refreshed, {len(data)} lights')
         self.lights = data
