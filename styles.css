@@ -1,0 +1,19 @@
+#top-level {
+    background-color: #10131a;
+}
+
+QPushButton {
+    font-weight: bold;
+    border: none;
+    color: #00bcd4;
+}
+QPushButton:hover {
+    color: #ff00bf;
+}
+QPushButton:pressed {
+    color: #8e24aa;
+}
+
+QLabel, QGroupBox {
+    color: #ffffff;
+}

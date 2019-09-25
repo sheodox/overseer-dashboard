@@ -1,4 +1,5 @@
 import sys
+from copy import copy
 from urllib.error import HTTPError
 
 from config_reader import ConfigReader
@@ -12,12 +13,34 @@ def pretty_temp(f):
     return "{0:.0f}°".format(f)
 
 
+def pretty_length(inches):
+    if inches == 0:
+        return None
+    return '{0:0.2f}"'.format(inches)
+
+
 def pretty_date_str(dt):
     return dt.strftime("%m/%d/%Y %I:%M:%S %p")
 
 
 def pretty_relative_date(dt):
-    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dt.weekday()]
+    return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
+
+
+def pretty_relative_datetime(dt):
+    day_str = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
+    hour = dt.hour
+    if hour < 6:
+        hour_str = 'early morning'
+    elif hour < 12:
+        hour_str = 'morning'
+    elif hour < 18:
+        hour_str = 'afternoon'
+    elif hour < 21:
+        hour_str = 'evening'
+    else:
+        hour_str = 'night'
+    return f'{day_str} {hour_str}'
 
 
 class Weather:
@@ -42,6 +65,8 @@ class Weather:
     def refresh(self):
         today_forecast = self.make_api_call(f'weather?zip={cfg.get("zip-code")}')
         self.forecast_today = self.collect_weather_information(today_forecast)
+        for temp_type in ['temp', 'low', 'high']:
+            self.forecast_today[temp_type] = pretty_temp(self.forecast_today[temp_type])
         self.location_name = today_forecast['name']
 
         # get forecast for the next few days
@@ -72,8 +97,11 @@ class Weather:
 
         # make everything look pretty, now that we've organized all the data
         for day in self.days:
-            day['low'] = pretty_temp(day['low'])
-            day['high'] = pretty_temp(day['high'])
+            if day is not None:
+                day['low'] = pretty_temp(day['low'])
+                day['high'] = pretty_temp(day['high'])
+                day['rain'] = pretty_length(day['rain'])
+                day['snow'] = pretty_length(day['snow'])
 
     def collect_weather_information(self, forecast):
         temps = forecast['main']
@@ -114,7 +142,17 @@ class Weather:
         return self.forecast_today['dt-pretty']
 
     def get_todays_forecast(self):
-        return self.forecast_today
+        forecast = copy(self.forecast_today)
+
+        def get_precip(precip_type):
+            precip = next((period['dt'] for period in self.periods if period[precip_type] != 0), None)
+            if precip:
+                forecast[f'next_{precip_type}'] = f"Next {precip_type} {pretty_relative_datetime(precip)}."
+
+        get_precip('rain')
+        get_precip('snow')
+
+        return forecast
 
     def get_days(self):
         return self.days
