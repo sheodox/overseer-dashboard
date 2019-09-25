@@ -3,6 +3,7 @@
 }
 
 QPushButton {
+    background-color: #1a1e26; border: none;
     font-weight: bold;
     border: none;
     color: #00bcd4;
@@ -14,6 +15,12 @@ QPushButton:pressed {
     color: #8e24aa;
 }
 
-QLabel, QGroupBox {
+QLabel {
     color: #ffffff;
+}
+
+QGroupBox {
+    color: white;
+    font-weight: bold;
+    border-color: black;
 }

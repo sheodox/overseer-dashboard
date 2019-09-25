@@ -25,6 +25,8 @@ class Dashboard(QWidget):
         self.setMinimumWidth(650)
         self.setMinimumHeight(360)
         self.show()
+        if 'fullscreen' in sys.argv:
+            self.showFullScreen()
 
     def create_lights_ui(self):
         lights_box = QGroupBox('Lights')
@@ -33,9 +35,6 @@ class Dashboard(QWidget):
 
         def create_light_button(l):
             button = QPushButton(l['name'])
-            button.setStyleSheet("""
-                background-color: #1a1e26; border: none;
-            """)
             button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
             button.clicked.connect(lambda: self.lights.toggle(l['id']))
