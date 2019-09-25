@@ -38,3 +38,5 @@ class Lights:
         res = easy_requests.get(f'{self.overseer_url}lights/toggle/{light_id}')
         if 'error' in res:
             self.log(f'Error toggling lights: {res["error"]}')
+        else:
+            self.refresh()

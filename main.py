@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGridLayout, \
-    QBoxLayout, QGroupBox, QSizePolicy
+    QBoxLayout, QGroupBox, QSizePolicy, QGraphicsBlurEffect
 from lights import Lights
 from weather import Weather
 
@@ -14,6 +14,7 @@ class Dashboard(QWidget):
         self.setLayout(self.layout)
         self.setObjectName('top-level')
 
+        self.light_buttons = {}
         self.create_lights_ui()
         self.layout.addStretch()
         self.create_weather_ui()
@@ -34,16 +35,33 @@ class Dashboard(QWidget):
         lights_box.setLayout(layout)
 
         def create_light_button(l):
+            def on_click():
+                self.lights.toggle(l['id'])
+                self.set_light_on_status()
+
             button = QPushButton(l['name'])
+            self.light_buttons[l['id']] = button
             button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-            button.clicked.connect(lambda: self.lights.toggle(l['id']))
+            button.clicked.connect(on_click)
             layout.addWidget(button)
 
         for light in self.lights.get_lights():
             create_light_button(light)
 
+        self.set_light_on_status()
         self.layout.addWidget(lights_box)
+
+    def set_light_on_status(self):
+        for light in self.lights.get_lights():
+            print(f'setting status for {light["name"]} {light["on"]}')
+            button = self.light_buttons[light['id']]
+            button.setProperty('light-on', light['on'])
+            self.update_widget(button)
+
+    def update_widget(self, widget):
+        self.style().unpolish(widget)
+        self.style().polish(widget)
 
     def create_weather_ui(self):
         max_periods = 5

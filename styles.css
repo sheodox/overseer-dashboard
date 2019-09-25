@@ -7,12 +7,25 @@ QPushButton {
     font-weight: bold;
     border: none;
     color: #00bcd4;
+    border-radius: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 QPushButton:hover {
-    color: #ff00bf;
+    border: 2px solid #ff00bf;
 }
 QPushButton:pressed {
     color: #8e24aa;
+}
+QPushButton[light-on=true] {
+    color: black;
+    background: #3db4f2;
+}
+QPushButton[light-on=true]:hover {
+    background: #ff00bf;
+}
+QPushButton[light-on=false] {
+    color: white;
 }
 
 QLabel {
@@ -24,3 +37,4 @@ QGroupBox {
     font-weight: bold;
     border-color: black;
 }
+
