@@ -1,6 +1,8 @@
 import sys
+
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGridLayout, \
-    QBoxLayout, QGroupBox, QSizePolicy, QGraphicsBlurEffect
+    QBoxLayout, QGroupBox, QSizePolicy, QGraphicsBlurEffect, QAction
 from lights import Lights
 from weather import Weather
 
@@ -11,13 +13,19 @@ class Dashboard(QWidget):
         self.lights = Lights()
         self.weather = Weather()
         self.layout = QHBoxLayout()
+        self.weather_update_timeout = 1000 * 300  # five minutes, weather reports only update every 10 minutes
         self.setLayout(self.layout)
         self.setObjectName('top-level')
 
         self.light_buttons = {}
         self.create_lights_ui()
         self.layout.addStretch()
+        self.weather_box = None
         self.create_weather_ui()
+
+        timer = QTimer(self)
+        timer.timeout.connect(self.rebuild_weather)
+        timer.start(self.weather_update_timeout)
 
         with open('styles.css', 'r') as file:
             self.setStyleSheet(file.read())
@@ -28,6 +36,10 @@ class Dashboard(QWidget):
         self.show()
         if 'fullscreen' in sys.argv:
             self.showFullScreen()
+
+    def rebuild_weather(self):
+        self.weather.refresh()
+        self.create_weather_ui()
 
     def create_lights_ui(self):
         lights_box = QGroupBox('Lights')
@@ -54,7 +66,6 @@ class Dashboard(QWidget):
 
     def set_light_on_status(self):
         for light in self.lights.get_lights():
-            print(f'setting status for {light["name"]} {light["on"]}')
             button = self.light_buttons[light['id']]
             button.setProperty('light-on', light['on'])
             self.update_widget(button)
@@ -64,8 +75,11 @@ class Dashboard(QWidget):
         self.style().polish(widget)
 
     def create_weather_ui(self):
-        max_periods = 5
+        if self.weather_box != None:
+            self.layout.removeWidget(self.weather_box)
+            self.weather_box.deleteLater()
         weather_box = QGroupBox(f"Weather for {self.weather.get_location_name()}")
+        self.weather_box = weather_box
         weather_layout = QVBoxLayout()
         weather_box.setLayout(weather_layout)
 
@@ -85,7 +99,6 @@ class Dashboard(QWidget):
             label = lambda text: day_layout.addWidget(QLabel(text))
             day_box = QGroupBox(day['dt-pretty'])
             day_layout = QVBoxLayout()
-            print(day)
             label(f"{day['low']} - {day['high']}")
             if day['rain'] is not None:
                 label(f"{day['rain']} rain")
@@ -97,7 +110,6 @@ class Dashboard(QWidget):
 
         weather_layout.addLayout(days_layout)
         self.layout.addWidget(weather_box)
-
 
 if __name__ == '__main__':
     app = QApplication([])
