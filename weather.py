@@ -4,43 +4,11 @@ from urllib.error import HTTPError
 
 from config_reader import ConfigReader
 from datetime import datetime
+from pretty import pretty_temp, pretty_weekday, pretty_date_str, pretty_length, pretty_relative_datetime, \
+    pretty_weekday
 import easy_requests
 
 cfg = ConfigReader()
-
-
-def pretty_temp(f):
-    return "{0:.0f}°".format(f)
-
-
-def pretty_length(inches):
-    if inches == 0:
-        return None
-    return '{0:0.2f}"'.format(inches)
-
-
-def pretty_date_str(dt):
-    return dt.strftime("%m/%d/%Y %I:%M:%S %p")
-
-
-def pretty_relative_date(dt):
-    return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
-
-
-def pretty_relative_datetime(dt):
-    day_str = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
-    hour = dt.hour
-    if hour < 6:
-        hour_str = 'early morning'
-    elif hour < 12:
-        hour_str = 'morning'
-    elif hour < 18:
-        hour_str = 'afternoon'
-    elif hour < 21:
-        hour_str = 'evening'
-    else:
-        hour_str = 'night'
-    return f'{day_str} {hour_str}'
 
 
 class Weather:
@@ -83,7 +51,7 @@ class Weather:
                 dt = period['dt'].date()
                 self.days[delta] = {
                     "dt": dt,
-                    "dt-pretty": pretty_relative_date(dt),
+                    "dt-pretty": pretty_weekday(dt),
                     "rain": 0,
                     "snow": 0,
                     "low": period['low'],

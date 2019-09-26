@@ -1,10 +1,12 @@
 import sys
 
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGridLayout, \
     QBoxLayout, QGroupBox, QSizePolicy, QGraphicsBlurEffect, QAction
+from datetime import datetime
 from lights import Lights
 from weather import Weather
+from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str
 
 
 class Dashboard(QWidget):
@@ -17,15 +19,15 @@ class Dashboard(QWidget):
         self.setLayout(self.layout)
         self.setObjectName('top-level')
 
+        self.clock_date = None
+        self.clock_time = None
         self.light_buttons = {}
         self.create_lights_ui()
         self.layout.addStretch()
         self.weather_box = None
         self.create_weather_ui()
 
-        timer = QTimer(self)
-        timer.timeout.connect(self.rebuild_weather)
-        timer.start(self.weather_update_timeout)
+        self.interval(self.rebuild_weather, self.weather_update_timeout)
 
         with open('styles.css', 'r') as file:
             self.setStyleSheet(file.read())
@@ -34,15 +36,41 @@ class Dashboard(QWidget):
         self.setMinimumWidth(650)
         self.setMinimumHeight(360)
         self.show()
+
+        # can be run using 'start_fullscreen.sh' for touch screens
         if 'fullscreen' in sys.argv:
             self.showFullScreen()
+
+    def create_clock(self, layout):
+        self.clock_time = QLabel('')
+        self.clock_date = QLabel('')
+        self.clock_date.setAlignment(Qt.AlignRight)
+        self.clock_time.setObjectName('clock-time')
+        self.clock_date.setObjectName('clock-date')
+        layout.addWidget(self.clock_time)
+        layout.addWidget(self.clock_date)
+        self.interval(self.update_time, 1000)
+        self.update_time()  # set the time immediately
+
+    def update_time(self):
+        now = datetime.now()
+        self.clock_date.setText(f'{pretty_weekday(now)} {pretty_date_only_str(now)}')
+        self.clock_time.setText(pretty_time_str(now))
+
+    def interval(self, fn, ms):
+        timer = QTimer(self)
+        timer.timeout.connect(fn)
+        timer.start(ms)
 
     def rebuild_weather(self):
         self.weather.refresh()
         self.create_weather_ui()
 
     def create_lights_ui(self):
+        column = QVBoxLayout()
+        self.create_clock(column)
         lights_box = QGroupBox('Lights')
+        column.addWidget(lights_box)
         layout = QVBoxLayout()
         lights_box.setLayout(layout)
 
@@ -62,7 +90,7 @@ class Dashboard(QWidget):
             create_light_button(light)
 
         self.set_light_on_status()
-        self.layout.addWidget(lights_box)
+        self.layout.addLayout(column)
 
     def set_light_on_status(self):
         for light in self.lights.get_lights():

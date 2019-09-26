@@ -38,3 +38,7 @@ QGroupBox {
     border-color: black;
 }
 
+#clock-time {
+    font-size: 30px;
+    color: #02FD8A;
+}
