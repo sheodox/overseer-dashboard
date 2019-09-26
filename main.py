@@ -15,7 +15,6 @@ class Dashboard(QWidget):
         self.lights = Lights()
         self.weather = Weather()
         self.layout = QHBoxLayout()
-        self.weather_update_timeout = 1000 * 300  # five minutes, weather reports only update every 10 minutes
         self.setLayout(self.layout)
         self.setObjectName('top-level')
 
@@ -27,7 +26,11 @@ class Dashboard(QWidget):
         self.weather_box = None
         self.create_weather_ui()
 
+        self.weather_update_timeout = 1000 * 300  # five minutes, weather reports only update every 10 minutes
+        self.light_refresh_timeout = 1000 * 10
         self.interval(self.rebuild_weather, self.weather_update_timeout)
+        # poll every so often just in case the lights are changed elsewhere
+        self.interval(self.refresh_lights, self.light_refresh_timeout)
 
         with open('styles.css', 'r') as file:
             self.setStyleSheet(file.read())
@@ -51,6 +54,10 @@ class Dashboard(QWidget):
         layout.addWidget(self.clock_date)
         self.interval(self.update_time, 1000)
         self.update_time()  # set the time immediately
+
+    def refresh_lights(self):
+        self.lights.refresh()
+        self.set_light_on_status()
 
     def update_time(self):
         now = datetime.now()

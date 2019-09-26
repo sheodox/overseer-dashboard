@@ -23,7 +23,6 @@ class Lights:
             self.log('error retrieving lights information, does overseer trust this device?')
             sys.exit(-1)
 
-        self.log(f'refreshed, {len(data)} lights')
         self.lights = data
 
     def get_lights(self):
