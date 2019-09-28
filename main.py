@@ -1,12 +1,12 @@
 import sys
+from datetime import datetime
 
 from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGridLayout, \
-    QBoxLayout, QGroupBox, QSizePolicy, QGraphicsBlurEffect, QAction
-from datetime import datetime
+from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGroupBox, QSizePolicy
+
 from lights import Lights
-from weather import Weather
 from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str
+from weather import Weather
 
 
 class Dashboard(QWidget):
