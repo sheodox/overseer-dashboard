@@ -136,7 +136,7 @@ class Dashboard(QWidget):
         self.set_temp_color(low_label, today['low'])
         high_label = QLabel(today['high-pretty'])
         self.set_temp_color(high_label, today['high'])
-        self.in_h_layout(today_right, low_label, QLabel(' - '), high_label)
+        self.in_h_layout(today_right, low_label, QLabel('-'), high_label)
         today_right.addWidget(QLabel(f"{today['weather']}"))
 
         if 'next_rain' in today:
