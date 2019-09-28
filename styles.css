@@ -42,3 +42,7 @@ QGroupBox {
     font-size: 30px;
     color: #02FD8A;
 }
+
+#current-temperature {
+    font-size: 30px;
+}

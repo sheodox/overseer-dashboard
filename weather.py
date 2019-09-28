@@ -34,7 +34,7 @@ class Weather:
         today_forecast = self.make_api_call(f'weather?zip={cfg.get("zip-code")}')
         self.forecast_today = self.collect_weather_information(today_forecast)
         for temp_type in ['temp', 'low', 'high']:
-            self.forecast_today[temp_type] = pretty_temp(self.forecast_today[temp_type])
+            self.forecast_today[temp_type + '-pretty'] = pretty_temp(self.forecast_today[temp_type])
         self.location_name = today_forecast['name']
 
         # get forecast for the next few days

@@ -118,13 +118,33 @@ class Dashboard(QWidget):
         weather_layout = QVBoxLayout()
         weather_box.setLayout(weather_layout)
 
-        weather_layout.addWidget(QLabel(f"last updated at {self.weather.get_updated_time()}"))
         today = self.weather.get_todays_forecast()
-        weather_layout.addWidget(QLabel(f"Now {today['temp']} {today['weather']} ({today['low']} - {today['high']})"))
+        today_row_layout = QHBoxLayout()
+        weather_layout.addLayout(today_row_layout)
+        today_left = QVBoxLayout()
+        today_right = QVBoxLayout()
+
+        today_left.addWidget(QLabel(f"last updated at {self.weather.get_updated_time()}"))
+        today_row_layout.addLayout(today_left)
+        today_row_layout.addStretch()
+        today_row_layout.addLayout(today_right)
+        current_temp = QLabel(today['temp-pretty'])
+        current_temp.setObjectName('current-temperature')
+        self.set_temp_color(current_temp, today['temp'])
+        today_right.addWidget(current_temp)
+        low_label = QLabel(today['low-pretty'])
+        self.set_temp_color(low_label, today['low'])
+        high_label = QLabel(today['high-pretty'])
+        self.set_temp_color(high_label, today['high'])
+        self.in_h_layout(today_right, low_label, QLabel(' - '), high_label)
+        today_right.addWidget(QLabel(f"{today['weather']}"))
+
         if 'next_rain' in today:
-            weather_layout.addWidget(QLabel(today['next_rain']))
+            today_left.addWidget(QLabel(today['next_rain']))
         if 'next_snow' in today:
-            weather_layout.addWidget(QLabel(today['next_snow']))
+            today_left.addWidget(QLabel(today['next_snow']))
+        today_left.addStretch()
+        today_right.addStretch()
 
         weather_layout.addStretch()
         days_layout = QHBoxLayout()
@@ -145,6 +165,55 @@ class Dashboard(QWidget):
 
         weather_layout.addLayout(days_layout)
         self.layout.addWidget(weather_box)
+
+    def in_v_layout(self, parent, *widgets):
+        layout = QVBoxLayout()
+        for widget in widgets:
+            layout.addWidget(widget)
+        parent.addLayout(layout)
+
+    def in_h_layout(self, parent, *widgets):
+        layout = QHBoxLayout()
+        for widget in widgets:
+            layout.addWidget(widget)
+        parent.addLayout(layout)
+
+    def set_temp_color(self, widget, temp):
+        widget.setStyleSheet(f'color: #{self.get_temperature_color(temp)}')
+
+    def get_temperature_color(self, degrees):
+        if degrees > 100:
+            return 'cc006c'
+        elif degrees > 90:
+            return 'fe3300'
+        elif degrees > 80:
+            return 'fe6601'
+        elif degrees > 70:
+            return 'fe8a33'
+        elif degrees > 60:
+            return 'ffbf00'
+        elif degrees > 50:
+            return 'fdff00'
+        elif degrees > 40:
+            return '3fff6e'
+        elif degrees > 30:
+            return '34cbc6'
+        elif degrees > 20:
+            return '35cbcb'
+        elif degrees > 10:
+            return '009afe'
+        elif degrees > 0:
+            return '2f34c9'
+        elif degrees > -10:
+            return '6a00ce'
+        elif degrees > -20:
+            return '9901f6'
+        elif degrees > -30:
+            return 'cd98fe'
+        else:
+            return 'e3e1ed'
+
+
 
 if __name__ == '__main__':
     app = QApplication([])
