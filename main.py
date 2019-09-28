@@ -154,7 +154,12 @@ class Dashboard(QWidget):
             label = lambda text: day_layout.addWidget(QLabel(text))
             day_box = QGroupBox(day['dt-pretty'])
             day_layout = QVBoxLayout()
-            label(f"{day['low']} - {day['high']}")
+            low_temp = QLabel(day['low-pretty'])
+            high_temp = QLabel(day['high-pretty'])
+            self.set_temp_color(low_temp, day['low'])
+            self.set_temp_color(high_temp, day['high'])
+            self.in_h_layout(day_layout, low_temp, QLabel('-'), high_temp)
+
             if day['rain'] is not None:
                 label(f"{day['rain']} rain")
             if day['snow'] is not None:

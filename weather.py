@@ -66,10 +66,12 @@ class Weather:
         # make everything look pretty, now that we've organized all the data
         for day in self.days:
             if day is not None:
-                day['low'] = pretty_temp(day['low'])
-                day['high'] = pretty_temp(day['high'])
                 day['rain'] = pretty_length(day['rain'])
                 day['snow'] = pretty_length(day['snow'])
+
+                for temp_type in ['temp', 'low', 'high']:
+                    if temp_type in day:
+                        day[temp_type + '-pretty'] = pretty_temp(day[temp_type])
 
     def collect_weather_information(self, forecast):
         temps = forecast['main']
