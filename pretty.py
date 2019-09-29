@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 def pretty_temp(f):
     return "{0:.0f}°".format(f)
 
@@ -24,17 +27,22 @@ def pretty_weekday(dt):
     return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
 
 
-def pretty_relative_datetime(dt):
-    day_str = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
+def pretty_time_of_day(dt, is_today=False):
     hour = dt.hour
     if hour < 6:
-        hour_str = 'early morning'
+        return 'early this morning' if is_today else 'early morning'
     elif hour < 12:
-        hour_str = 'morning'
+        return 'this morning' if is_today else 'morning'
     elif hour < 18:
-        hour_str = 'afternoon'
+        return 'this afternoon' if is_today else 'afternoon'
     elif hour < 21:
-        hour_str = 'evening'
+        return 'this evening' if is_today else 'evening'
     else:
-        hour_str = 'night'
-    return f'{day_str} {hour_str}'
+        return 'tonight' if is_today else 'night'
+
+
+def pretty_relative_datetime(dt):
+    day_str = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
+    if dt.weekday() == datetime.now().weekday():
+        return pretty_time_of_day(dt, True)
+    return f'{day_str} {pretty_time_of_day(dt)}'

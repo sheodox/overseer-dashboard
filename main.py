@@ -139,10 +139,9 @@ class Dashboard(QWidget):
         self.in_h_layout(today_right, low_label, QLabel('-'), high_label)
         today_right.addWidget(QLabel(f"{today['weather']}"))
 
-        if 'next_rain' in today:
-            today_left.addWidget(QLabel(today['next_rain']))
-        if 'next_snow' in today:
-            today_left.addWidget(QLabel(today['next_snow']))
+        for precip_msg in self.weather.get_upcoming_precip_message():
+            today_left.addWidget(QLabel(precip_msg))
+
         today_left.addStretch()
         today_right.addStretch()
 

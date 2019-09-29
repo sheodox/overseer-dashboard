@@ -73,6 +73,23 @@ class Weather:
                     if temp_type in day:
                         day[temp_type + '-pretty'] = pretty_temp(day[temp_type])
 
+    def get_upcoming_precip_message(self):
+        now = self.get_todays_forecast()
+
+        def get_precip_message(precip_type, is_currently_precipitating):
+            next_precip_dt = next((period['dt'] for period in self.periods if period[precip_type] != 0), None)
+            next_clear_dt = next((period['dt'] for period in self.periods if period[precip_type] == 0), None)
+
+            if is_currently_precipitating:
+                return f'The {precip_type} should let up {pretty_relative_datetime(next_clear_dt)}'
+            elif next_precip_dt:
+                return f'It will {precip_type} {pretty_relative_datetime(next_precip_dt)}'
+            else:
+                return None
+
+        return list(precip for precip in [get_precip_message('rain', now['weather-id'] < 600),
+                get_precip_message('snow', 600 <= now['weather-id'] < 700)] if precip is not None)
+
     def collect_weather_information(self, forecast):
         temps = forecast['main']
         weather = forecast['weather'][0]
@@ -102,7 +119,8 @@ class Weather:
             "temp": temps['temp'],
             "low": temps['temp_min'],
             "high": temps['temp_max'],
-            "weather": weather["main"],
+            "weather": weather["description"],
+            "weather-id": weather["id"],
             # regardless of imperial setting, we get mm as units
             "rain": mm_to_inch(get_precip_amount('rain')),
             "snow": mm_to_inch(get_precip_amount('snow'))
@@ -113,14 +131,6 @@ class Weather:
 
     def get_todays_forecast(self):
         forecast = copy(self.forecast_today)
-
-        def get_precip(precip_type):
-            precip = next((period['dt'] for period in self.periods if period[precip_type] != 0), None)
-            if precip:
-                forecast[f'next_{precip_type}'] = f"Next {precip_type} {pretty_relative_datetime(precip)}."
-
-        get_precip('rain')
-        get_precip('snow')
 
         return forecast
 
