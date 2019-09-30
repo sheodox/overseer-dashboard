@@ -1,0 +1,30 @@
+QHBoxLayout
+    QVBoxLayout
+        QLabel#clock-time(align=right)
+        QLabel#clock-date(align=right)
+        QGroupBox Lights
+            QVBoxLayout#lights-box
+    stretch
+    QGroupBox#weather-box Weather for you
+        QVBoxLayout
+            //today's weather
+            QHBoxLayout
+                QVBoxLayout
+                    QLabel#updated-time time
+                    //two upcomings because we can possibly have either rain or snow, don't know if we need both or not
+                    QLabel#upcoming-0
+                    QLabel#upcoming-1
+                stretch
+                QVBoxLayout
+                    QLabel#current-temperature.temperature(align=right)
+                    QHBoxLayout
+                        stretch
+                        QLabel#today-low.temperature
+                        QLabel -
+                        QLabel#today-high.temperature
+                    QLabel#current-conditions(align=right) weather
+            stretch
+            //five day forecast
+            QHBoxLayout#forecast
+
+

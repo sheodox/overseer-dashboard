@@ -66,8 +66,8 @@ class Weather:
         # make everything look pretty, now that we've organized all the data
         for day in self.days:
             if day is not None:
-                day['rain'] = pretty_length(day['rain'])
-                day['snow'] = pretty_length(day['snow'])
+                day['rain'] = f"{pretty_length(day['rain'])} rain" if day['rain'] else None
+                day['snow'] = f"{pretty_length(day['snow'])} snow" if day['snow'] else None
 
                 for temp_type in ['temp', 'low', 'high']:
                     if temp_type in day:
