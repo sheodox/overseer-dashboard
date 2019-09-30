@@ -18,6 +18,7 @@ class Weather:
         self.location_name = ''
         self.forecast_today = {}
         self.periods = []
+        self.days = []
         self.refresh()
 
     def make_api_call(self, api):
