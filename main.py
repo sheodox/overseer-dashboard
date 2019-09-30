@@ -17,6 +17,7 @@ forecast_day = """
                             QLabel -
                             QLabel#forecast-day-{i}-high.temperature
                             stretch
+                        QLabel#forecast-day-{i}-conditions
                         //like the upcoming precip for today, we could have one or both types of precip, don't leave a gap
                         QLabel#forecast-day-{i}-precip-0
                         QLabel#forecast-day-{i}-precip-1
@@ -167,6 +168,7 @@ class Dashboard(QWidget):
         # skip the current day
         for i, day in enumerate(self.weather.get_days()[1:]):
             self.ui.set_text(f'forecast-day-{i}', day['dt-pretty'])
+            self.ui.set_text(f'forecast-day-{i}-conditions', day['weather'])
             set_temp(f'forecast-day-{i}-low', day, 'low')
             set_temp(f'forecast-day-{i}-high', day, 'high')
 

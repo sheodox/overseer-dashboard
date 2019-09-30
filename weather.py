@@ -56,13 +56,15 @@ class Weather:
                     "rain": 0,
                     "snow": 0,
                     "low": period['low'],
-                    "high": period['high']
+                    "high": period['high'],
+                    "weather-mains": []
                 }
             this_day = self.days[delta]
             this_day['low'] = min(this_day['low'], period['low'])
             this_day['high'] = max(this_day['high'], period['high'])
             this_day['rain'] += period['rain']
             this_day['snow'] += period['snow']
+            this_day['weather-mains'].append(period['weather-main'])
 
         # make everything look pretty, now that we've organized all the data
         for day in self.days:
@@ -73,6 +75,12 @@ class Weather:
                 for temp_type in ['temp', 'low', 'high']:
                     if temp_type in day:
                         day[temp_type + '-pretty'] = pretty_temp(day[temp_type])
+
+                # get the weather type that's happening the most
+                mains = day['weather-mains']
+                day['weather'] = max(set(mains), key=mains.count)
+
+        print(self.days)
 
     def get_upcoming_precip_message(self):
         now = self.get_todays_forecast()
@@ -121,6 +129,7 @@ class Weather:
             "low": temps['temp_min'],
             "high": temps['temp_max'],
             "weather": weather["description"],
+            "weather-main": weather["main"],
             "weather-id": weather["id"],
             # regardless of imperial setting, we get mm as units
             "rain": mm_to_inch(get_precip_amount('rain')),
