@@ -16,6 +16,7 @@ forecast_day = """
                             QLabel#forecast-day-{i}-low.temperature
                             QLabel -
                             QLabel#forecast-day-{i}-high.temperature
+                            stretch
                         //like the upcoming precip for today, we could have one or both types of precip, don't leave a gap
                         QLabel#forecast-day-{i}-precip-0
                         QLabel#forecast-day-{i}-precip-1
