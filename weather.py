@@ -117,9 +117,9 @@ class Weather:
             next_clear_dt = next((period['dt'] for period in self.periods if period[precip_type] == 0), None)
 
             if is_currently_precipitating:
-                return f'The {precip_type} should let up {pretty_relative_datetime(next_clear_dt)}'
+                return f'The {precip_type} should let up {pretty_relative_datetime(next_clear_dt)}.'
             elif next_precip_dt:
-                return f'It will {precip_type} {pretty_relative_datetime(next_precip_dt)}'
+                return f'It will {precip_type} {pretty_relative_datetime(next_precip_dt)}.'
             else:
                 return None
 
