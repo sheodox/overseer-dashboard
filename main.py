@@ -218,13 +218,13 @@ class Dashboard(QWidget):
                 layout.addWidget(header)
                 layout.addWidget(QLabel(f"{alert['description']}"))
 
-            box = ScrollMessageBox(layout)
+            box = ScrollMessageBox('Weather Alert', layout)
 
         self.ui.on_click(id, show_weather_alert)
 
 
 class ScrollMessageBox(QMessageBox):
-    def __init__(self, child_layout):
+    def __init__(self, window_title, child_layout):
         QMessageBox.__init__(self)
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
@@ -236,7 +236,7 @@ class ScrollMessageBox(QMessageBox):
 
         self.setObjectName('top-level')
         self.setStyleSheet(default_styles)
-
+        self.setWindowTitle(window_title)
         self.layout().addWidget(scroll, 0, 0, 1, 0)
         self.exec()
 
