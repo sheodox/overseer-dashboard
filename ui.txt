@@ -13,6 +13,10 @@ QHBoxLayout
                     //two upcomings because we can possibly have either rain or snow, don't know if we need both or not
                     QLabel#upcoming-0
                     QLabel#upcoming-1
+                    QHBoxLayout
+                        stretch
+                        QPushButton#today-alert
+                        stretch
                 stretch
                 QHBoxLayout
                     stretch

@@ -5,12 +5,13 @@ from datetime import datetime
 
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGroupBox, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QPushButton, QSizePolicy, QMessageBox, \
+    QScrollArea
 
 from lights import Lights
 from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str
-from weather import Weather
 from uibuilder import UIBuilder
+from weather import Weather
 
 # icon cache directory
 try:
@@ -19,6 +20,8 @@ except OSError as e:
     if e.errno != errno.EEXIST:
         raise
 
+with open('styles.css', 'r') as file:
+    default_styles = file.read()
 forecast_day = """
                  QGroupBox#forecast-day-{i}
                     QVBoxLayout
@@ -98,9 +101,7 @@ class Dashboard(QWidget):
         # poll every so often just in case the lights are changed elsewhere
         self.interval(self.refresh_lights, self.light_refresh_timeout)
 
-        with open('styles.css', 'r') as file:
-            self.setStyleSheet(file.read())
-
+        self.setStyleSheet(default_styles)
         self.setWindowTitle('Overseer Dashboard')
         self.setMinimumWidth(650)
         self.setMinimumHeight(360)
@@ -162,7 +163,6 @@ class Dashboard(QWidget):
         def set_icon(id, icon_name, size=None):
             pixmap = QPixmap(f'cache/{icon_name}.png')
             if size:
-                print(size)
                 pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.FastTransformation)
             widget = self.ui.by_id(id)
             widget.setPixmap(pixmap)
@@ -182,6 +182,14 @@ class Dashboard(QWidget):
         self.ui.set_text('current-conditions', f"{today['weather']}")
         set_icon('current-icon', today['weather-icon'])
 
+        if 'alerts' in today:
+            self.ui.show('today-alert')
+            alerts = today['alerts']
+            self.ui.set_text('today-alert', f'{len(alerts)} active alert{"s" if len(alerts) > 1 else ""}')
+            self.connect_alert_listener('today-alert', alerts)
+        else:
+            self.ui.hide('today-alert')
+
         for index, precip_msg in enumerate(self.weather.get_upcoming_precip_message()):
             self.ui.set_text(f'upcoming-{index}', precip_msg)
 
@@ -199,6 +207,38 @@ class Dashboard(QWidget):
                 if day[precip] is not None:
                     self.ui.set_text(f'forecast-day-{i}-precip-{precip_num}', day[precip])
                     precip_num += 1
+
+    def connect_alert_listener(self, id, alerts):
+        def show_weather_alert():
+            layout = QVBoxLayout()
+            for alert in alerts:
+                header = QLabel(alert['headline'])
+                header.setWordWrap(True)
+                header.setProperty('header', True)
+                layout.addWidget(header)
+                layout.addWidget(QLabel(f"{alert['description']}"))
+
+            box = ScrollMessageBox(layout)
+
+        self.ui.on_click(id, show_weather_alert)
+
+
+class ScrollMessageBox(QMessageBox):
+    def __init__(self, child_layout):
+        QMessageBox.__init__(self)
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        widget = QWidget()
+        scroll.setWidget(widget)
+        scroll.setMinimumSize(400, 200)
+        self.scroll_layout = QVBoxLayout()
+        widget.setLayout(child_layout)
+
+        self.setObjectName('top-level')
+        self.setStyleSheet(default_styles)
+
+        self.layout().addWidget(scroll, 0, 0, 1, 0)
+        self.exec()
 
 
 if __name__ == '__main__':

@@ -46,3 +46,17 @@ QGroupBox {
 #current-temperature {
     font-size: 30px;
 }
+#today-alert {
+    color: red;
+}
+QScrollArea {
+    background-color: #282b33;
+    min-width: 500px;
+    min-height: 250px;
+}
+QLabel[header=true] {
+    font-size: 16px;
+}
+[hidden=true] {
+    display: none;
+}

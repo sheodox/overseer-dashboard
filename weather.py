@@ -18,6 +18,8 @@ class Weather:
         self.updated = ''
         self.location_name = ''
         self.forecast_today = {}
+        self.coords = {}  # lon and lat, from openweather for checking weather.gov weather alerts
+        self.active_alerts = []
         self.periods = []
         self.days = []
         self.refresh()
@@ -32,8 +34,22 @@ class Weather:
                       'is correct or try again later.')
                 sys.exit(-1)
 
+    def make_alerts_call(self, dt):
+        lat = self.coords['lat']
+        lon = self.coords['lon']
+        alerts = easy_requests.get(f'https://api.weather.gov/alerts/active?point={lat}%2C{lon}')
+
+        self.active_alerts = []
+        for alert in list(alert['properties'] for alert in alerts['features']):
+            self.active_alerts.append({
+                'headline': alert['headline'],
+                'description': alert['description']
+            })
+
     def refresh(self):
         today_forecast = self.make_api_call(f'weather?zip={cfg.get("zip-code")}')
+        self.coords = today_forecast['coord']
+        self.make_alerts_call(datetime.now())
         self.forecast_today = self.collect_weather_information(today_forecast)
         for temp_type in ['temp', 'low', 'high']:
             self.forecast_today[temp_type + '-pretty'] = pretty_temp(self.forecast_today[temp_type])
@@ -155,6 +171,8 @@ class Weather:
 
     def get_todays_forecast(self):
         forecast = copy(self.forecast_today)
+        if len(self.active_alerts) > 0:
+            forecast['alerts'] = copy(self.active_alerts)
 
         return forecast
 

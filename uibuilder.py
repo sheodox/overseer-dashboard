@@ -1,7 +1,7 @@
 import re
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QHBoxLayout, QLabel, QGroupBox, QVBoxLayout
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QGroupBox, QVBoxLayout, QPushButton, QScrollArea
 
 
 def get_indent_level(line):
@@ -45,6 +45,12 @@ class UIBuilder:
         self.widgets_by_class = []
         self.parse(self.top, 0, self.raw)
 
+    def show(self, id):
+        self.by_id(id).show()
+
+    def hide(self, id):
+        self.by_id(id).hide()
+
     def by_id(self, id):
         return self.widgets_by_id[id]
 
@@ -62,8 +68,19 @@ class UIBuilder:
     def set_stylesheet(self, id, ss):
         widget = self.by_id(id)
         widget.setStyleSheet(ss)
+        self._update_widget(widget)
+
+    def _update_widget(self, widget):
         self.top.style().unpolish(widget)
         self.top.style().polish(widget)
+
+    def on_click(self, id, func):
+        widget = self.by_id(id)
+        try:
+            widget.clicked.disconnect()
+        except Exception:
+            pass
+        widget.clicked.connect(func)
 
     def create(self, widget_name):
         if widget_name == 'QHBoxLayout':
@@ -74,6 +91,12 @@ class UIBuilder:
             return QLabel()
         elif widget_name == 'QGroupBox':
             return QGroupBox()
+        elif widget_name == 'QPushButton':
+            return QPushButton()
+        elif widget_name == 'QScrollArea':
+            return QScrollArea()
+        else:
+            raise ImportError(f'UIBuilder missing import for {widget_name}')
 
     def parse(self, parent, level, lines):
         last_line = None
