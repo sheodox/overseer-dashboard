@@ -1,5 +1,6 @@
 import sys
 from copy import copy
+from os import path
 from urllib.error import HTTPError
 
 from config_reader import ConfigReader
@@ -78,9 +79,19 @@ class Weather:
 
                 # get the weather type that's happening the most
                 mains = day['weather-mains']
-                day['weather'] = max(set(mains), key=mains.count)
-
-        print(self.days)
+                most_frequent_weather = max(set(mains), key=mains.count)
+                day['weather'] = most_frequent_weather
+                # pick an icon based on the most main one, eventually this can be more detailed with
+                # better daily summaries
+                day['weather-icon'] = {
+                    'Rain': '10d',
+                    'Snow': '13d',
+                    'Drizzle': '09d',
+                    'Thunderstorm': '11d',
+                    'Clear': '01d',
+                    'Clouds': '03d'
+                }[most_frequent_weather]
+                self.cache_icon(day['weather-icon'])
 
     def get_upcoming_precip_message(self):
         now = self.get_todays_forecast()
@@ -121,6 +132,8 @@ class Weather:
         def mm_to_inch(mm):
             return 0.0393701 * mm
 
+        self.cache_icon(weather['icon'])
+
         return {
             "dt": dt,
             "days-from-now": (dt - today).days,
@@ -131,6 +144,7 @@ class Weather:
             "weather": weather["description"],
             "weather-main": weather["main"],
             "weather-id": weather["id"],
+            "weather-icon": weather["icon"],
             # regardless of imperial setting, we get mm as units
             "rain": mm_to_inch(get_precip_amount('rain')),
             "snow": mm_to_inch(get_precip_amount('snow'))
@@ -149,3 +163,10 @@ class Weather:
 
     def get_location_name(self):
         return self.location_name
+
+    def cache_icon(self, icon_name):
+        icon_path = f'cache/{icon_name}.png'
+        if not path.exists(icon_path):
+            image_data = easy_requests.get(f'http://openweathermap.org/img/wn/{icon_name}@2x.png', 'image/png')
+            with open(icon_path, 'wb') as file:
+                file.write(image_data)

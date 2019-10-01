@@ -1,7 +1,10 @@
+import errno
+import os
 import sys
 from datetime import datetime
 
 from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QGroupBox, QSizePolicy
 
 from lights import Lights
@@ -9,9 +12,17 @@ from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str
 from weather import Weather
 from uibuilder import UIBuilder
 
+# icon cache directory
+try:
+    os.makedirs('cache')
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise
+
 forecast_day = """
                  QGroupBox#forecast-day-{i}
                     QVBoxLayout
+                        QLabel#forecast-day-{i}-icon
                         QHBoxLayout
                             QLabel#forecast-day-{i}-low.temperature
                             QLabel -
@@ -148,6 +159,14 @@ class Dashboard(QWidget):
         self.style().polish(widget)
 
     def update_weather_ui(self):
+        def set_icon(id, icon_name, size=None):
+            pixmap = QPixmap(f'cache/{icon_name}.png')
+            if size:
+                print(size)
+                pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.FastTransformation)
+            widget = self.ui.by_id(id)
+            widget.setPixmap(pixmap)
+
         def set_temp(id, weather_data, temp_attr):
             self.ui.set_text(id, weather_data[f'{temp_attr}-pretty'])
             self.ui.set_stylesheet(id, get_temp_color_stylesheet(weather_data[temp_attr]))
@@ -161,6 +180,7 @@ class Dashboard(QWidget):
         set_temp('today-low', today, 'low')
         set_temp('today-high', today, 'high')
         self.ui.set_text('current-conditions', f"{today['weather']}")
+        set_icon('current-icon', today['weather-icon'])
 
         for index, precip_msg in enumerate(self.weather.get_upcoming_precip_message()):
             self.ui.set_text(f'upcoming-{index}', precip_msg)
@@ -171,6 +191,7 @@ class Dashboard(QWidget):
             self.ui.set_text(f'forecast-day-{i}-conditions', day['weather'])
             set_temp(f'forecast-day-{i}-low', day, 'low')
             set_temp(f'forecast-day-{i}-high', day, 'high')
+            set_icon(f'forecast-day-{i}-icon', day['weather-icon'], 50)
 
             # there might be both types of precip, show one or both, but don't leave a blank line if there's only snow
             precip_num = 0

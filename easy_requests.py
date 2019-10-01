@@ -2,10 +2,13 @@ import urllib.request
 import json
 
 
-def get(url):
+def get(url, content_type='application/json'):
     r = urllib.request.Request(url,
                                  headers={'User-Agent': 'Overseer Dashboard'})
-    return json.loads(urllib.request.urlopen(r).read().decode('utf-8'))
+    if content_type == 'application/json':
+        return json.loads(urllib.request.urlopen(r).read().decode('utf-8'))
+    else:
+        return urllib.request.urlopen(r).read()
 
 
 def post(url, post_json):
