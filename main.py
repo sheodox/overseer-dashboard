@@ -6,7 +6,7 @@ from datetime import datetime
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QPushButton, QSizePolicy, QMessageBox, \
-    QScrollArea, QHBoxLayout
+    QScrollArea, QHBoxLayout, QScroller
 
 from lights import Lights
 from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str, pretty_time_str_short
@@ -293,6 +293,7 @@ class ScrollMessageBox(QMessageBox):
         widget = QWidget()
         scroll.setWidget(widget)
         scroll.setMinimumSize(400, 200)
+        QScroller.grabGesture(scroll, QScroller.LeftMouseButtonGesture)
         self.scroll_layout = QVBoxLayout()
         widget.setLayout(child_layout)
 
