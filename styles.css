@@ -52,7 +52,7 @@ QScrollArea {
     min-height: 250px;
 }
 QScrollArea QWidget {
-    background-color: #282b33;
+    background-color: #0e0f15;
 }
 QLabel[header=true] {
     font-size: 16px;
