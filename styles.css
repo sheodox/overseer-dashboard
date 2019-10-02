@@ -64,3 +64,7 @@ QLabel[header=true] {
 #today-details {
     width: 175px;
 }
+QGroupBox[detail-group=true] {
+    border: 1px solid gray;
+    border-radius: 3px;
+}

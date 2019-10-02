@@ -39,12 +39,12 @@ forecast_day_template = """
 """
 
 periods_detail_template = """
-QVBoxLayout
-    QLabel#icon-{i}
+QGroupBox(detail-group=true)
     QVBoxLayout
         QHBoxLayout
             QLabel#time-{i}
             QLabel#temp-{i}
+        QLabel#icon-{i}
         QLabel#conditions-{i}
         QLabel#rain-{i}
         QLabel#snow-{i}
