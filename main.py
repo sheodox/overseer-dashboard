@@ -269,16 +269,21 @@ class Dashboard(QWidget):
                 for precip_type in ['rain', 'snow']:
                     show_precip(precip_type)
 
-            dlg = ScrollMessageBox(f'Weather for {day["dt-pretty"]}', layout)
+            pretty_day = day["dt-pretty"] if day is not None else "Today"
+            dlg = ScrollMessageBox(f'Weather for {pretty_day}', layout)
 
         self.ui.on_click(id, show_forecast)
+
 
 class Alert(QMessageBox):
     def __init__(self, window_title, window_text):
         QMessageBox.__init__(self)
         self.setWindowTitle(window_title)
         self.setText(window_text)
+        self.setObjectName('top-level')
+        self.setStyleSheet(default_styles)
         self.exec()
+
 
 class ScrollMessageBox(QMessageBox):
     def __init__(self, window_title, child_layout):

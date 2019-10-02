@@ -115,6 +115,14 @@ class Weather:
                 }[most_frequent_weather]
                 self.cache_icon(day['weather-icon'])
 
+        # see if there are any more extreme low/highs in periods for today
+        if self.days[0] is not None:
+            fc = self.forecast_today
+            today = self.days[0]
+            fc['low'] = min(fc['low'], today['low'])
+            fc['high'] = max(fc['high'], today['high'])
+            self.forecast_today = make_pretty(fc)
+
     def get_upcoming_precip_message(self):
         now = self.get_todays_forecast()
 
