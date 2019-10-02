@@ -61,8 +61,18 @@ class Weather:
         for period in forecast5['list']:
             self.periods.append(self.collect_weather_information(period))
 
+        def make_pretty(data):
+            data['rain'] = f"{pretty_length(data['rain'])} rain" if data['rain'] else None
+            data['snow'] = f"{pretty_length(data['snow'])} snow" if data['snow'] else None
+
+            for temp_type in ['temp', 'low', 'high']:
+                if temp_type in data:
+                    data[temp_type + '-pretty'] = pretty_temp(data[temp_type])
+            return data
+
         # figure out day totals
         self.days = [None] * (1 + max(x['days-from-now'] for x in self.periods))
+        self.periods_by_day = copy(self.days)
         for period in self.periods:
             delta = period['days-from-now']
             if not self.days[delta]:
@@ -76,23 +86,19 @@ class Weather:
                     "high": period['high'],
                     "weather-mains": []
                 }
+                self.periods_by_day[delta] = []
             this_day = self.days[delta]
             this_day['low'] = min(this_day['low'], period['low'])
             this_day['high'] = max(this_day['high'], period['high'])
             this_day['rain'] += period['rain']
             this_day['snow'] += period['snow']
             this_day['weather-mains'].append(period['weather-main'])
+            self.periods_by_day[delta].append(make_pretty(copy(period)))
 
         # make everything look pretty, now that we've organized all the data
         for day in self.days:
             if day is not None:
-                day['rain'] = f"{pretty_length(day['rain'])} rain" if day['rain'] else None
-                day['snow'] = f"{pretty_length(day['snow'])} snow" if day['snow'] else None
-
-                for temp_type in ['temp', 'low', 'high']:
-                    if temp_type in day:
-                        day[temp_type + '-pretty'] = pretty_temp(day[temp_type])
-
+                day = make_pretty(day)
                 # get the weather type that's happening the most
                 mains = day['weather-mains']
                 most_frequent_weather = max(set(mains), key=mains.count)
@@ -155,8 +161,9 @@ class Weather:
             "days-from-now": (dt - today).days,
             "dt-pretty": pretty_date_str(dt),
             "temp": temps['temp'],
-            "low": temps['temp_min'],
-            "high": temps['temp_max'],
+            # temp_min and temp_max aren't min and max in this time period, it's min and max in the region
+            "low": temps['temp'],
+            "high": temps['temp'],
             "weather": weather["description"],
             "weather-main": weather["main"],
             "weather-id": weather["id"],
@@ -178,6 +185,14 @@ class Weather:
 
     def get_days(self):
         return self.days
+
+    def get_periods_by_day(self, day=None):
+        if not day:
+           return self.periods_by_day[0]
+
+        for day_, periods in zip(self.days, self.periods_by_day):
+            if day_ == day:
+                return periods
 
     def get_location_name(self):
         return self.location_name

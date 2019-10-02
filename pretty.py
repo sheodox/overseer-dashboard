@@ -23,6 +23,10 @@ def pretty_time_str(dt):
     return dt.strftime(f'%I:%M:%S %p')
 
 
+def pretty_time_str_short(dt):
+    return dt.strftime(f'%I %p')
+
+
 def pretty_weekday(dt):
     return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dt.weekday()]
 

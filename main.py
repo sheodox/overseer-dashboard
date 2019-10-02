@@ -6,10 +6,10 @@ from datetime import datetime
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QPushButton, QSizePolicy, QMessageBox, \
-    QScrollArea
+    QScrollArea, QHBoxLayout
 
 from lights import Lights
-from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str
+from pretty import pretty_weekday, pretty_date_only_str, pretty_time_str, pretty_time_str_short
 from uibuilder import UIBuilder
 from weather import Weather
 
@@ -22,9 +22,10 @@ except OSError as e:
 
 with open('styles.css', 'r') as file:
     default_styles = file.read()
-forecast_day = """
-                 QGroupBox#forecast-day-{i}
+forecast_day_template = """
+                QPushButton#forecast-day-{i}-details(expanding=true,style=height:150px;)
                     QVBoxLayout
+                        QLabel#forecast-day-{i}
                         QLabel#forecast-day-{i}-icon
                         QHBoxLayout
                             QLabel#forecast-day-{i}-low.temperature
@@ -37,6 +38,26 @@ forecast_day = """
                         QLabel#forecast-day-{i}-precip-1
                         stretch
 """
+
+periods_detail_template = """
+QVBoxLayout
+    QLabel#icon-{i}
+    QVBoxLayout
+        QHBoxLayout
+            QLabel#time-{i}
+            QLabel#temp-{i}
+        QLabel#conditions-{i}
+        QLabel#rain-{i}
+        QLabel#snow-{i}
+        stretch
+"""
+
+
+def scale_template(template, times):
+    temp = ''
+    for i in range(times):
+        temp += template.replace('{i}', str(i))
+    return temp
 
 
 def get_temperature_color(degrees):
@@ -84,8 +105,7 @@ class Dashboard(QWidget):
         self.setObjectName('top-level')
         with open('ui.txt') as file:
             raw_ui = file.read()
-        for day_num in range(5):
-            raw_ui += forecast_day.replace('{i}', str(day_num))
+        raw_ui += scale_template(forecast_day_template, 5)
         self.ui = UIBuilder(self, raw_ui)
 
         self.update_time()  # set the time immediately
@@ -103,13 +123,14 @@ class Dashboard(QWidget):
 
         self.setStyleSheet(default_styles)
         self.setWindowTitle('Overseer Dashboard')
-        self.setMinimumWidth(650)
-        self.setMinimumHeight(360)
         self.show()
 
         # can be run using 'start_fullscreen.sh' for touch screens
         if 'fullscreen' in sys.argv:
             self.showFullScreen()
+        else:
+            self.setMinimumWidth(800)
+            self.setMinimumHeight(480)
 
     def refresh_lights(self):
         self.lights.refresh()
@@ -160,13 +181,6 @@ class Dashboard(QWidget):
         self.style().polish(widget)
 
     def update_weather_ui(self):
-        def set_icon(id, icon_name, size=None):
-            pixmap = QPixmap(f'cache/{icon_name}.png')
-            if size:
-                pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.FastTransformation)
-            widget = self.ui.by_id(id)
-            widget.setPixmap(pixmap)
-
         def set_temp(id, weather_data, temp_attr):
             self.ui.set_text(id, weather_data[f'{temp_attr}-pretty'])
             self.ui.set_stylesheet(id, get_temp_color_stylesheet(weather_data[temp_attr]))
@@ -180,7 +194,8 @@ class Dashboard(QWidget):
         set_temp('today-low', today, 'low')
         set_temp('today-high', today, 'high')
         self.ui.set_text('current-conditions', f"{today['weather']}")
-        set_icon('current-icon', today['weather-icon'])
+        self.ui.set_icon('current-icon', today['weather-icon'])
+        self.connect_forecast_listener('today-details')
 
         if 'alerts' in today:
             self.ui.show('today-alert')
@@ -197,9 +212,10 @@ class Dashboard(QWidget):
         for i, day in enumerate(self.weather.get_days()[1:]):
             self.ui.set_text(f'forecast-day-{i}', day['dt-pretty'])
             self.ui.set_text(f'forecast-day-{i}-conditions', day['weather'])
+            self.connect_forecast_listener(f'forecast-day-{i}-details', day)
             set_temp(f'forecast-day-{i}-low', day, 'low')
             set_temp(f'forecast-day-{i}-high', day, 'high')
-            set_icon(f'forecast-day-{i}-icon', day['weather-icon'], 50)
+            self.ui.set_icon(f'forecast-day-{i}-icon', day['weather-icon'], 50)
 
             # there might be both types of precip, show one or both, but don't leave a blank line if there's only snow
             precip_num = 0
@@ -222,6 +238,47 @@ class Dashboard(QWidget):
 
         self.ui.on_click(id, show_weather_alert)
 
+    def connect_forecast_listener(self, id, day=None):
+        def show_forecast():
+            periods = self.weather.get_periods_by_day(day)
+            # if it's late in the day for the current day, we might not have any more information, show an alert instead
+            if periods is None:
+                alert = Alert('No more data', "It is late and there is no more available data for today.")
+                return
+
+            layout = QHBoxLayout()
+            ui = UIBuilder(layout, scale_template(periods_detail_template, len(periods)))
+
+            for i, period in enumerate(periods):
+                ui.set_text(f'time-{i}', pretty_time_str_short(period['dt']))
+                ui.set_icon(f'icon-{i}', period['weather-icon'], 75)
+
+                temp_id = f'temp-{i}'
+                ui.set_text(temp_id, period['temp-pretty'])
+                ui.by_id(temp_id).setStyleSheet(get_temp_color_stylesheet(period['temp']))
+                ui.set_text(f'conditions-{i}', period['weather'])
+
+                def show_precip(precip_type):
+                    precip = period[precip_type]
+                    precip_id = f'{precip_type}-{i}'
+                    if precip is not None:
+                        ui.set_text(precip_id, precip)
+                    else:
+                        ui.hide(precip_id)
+
+                for precip_type in ['rain', 'snow']:
+                    show_precip(precip_type)
+
+            dlg = ScrollMessageBox(f'Weather for {day["dt-pretty"]}', layout)
+
+        self.ui.on_click(id, show_forecast)
+
+class Alert(QMessageBox):
+    def __init__(self, window_title, window_text):
+        QMessageBox.__init__(self)
+        self.setWindowTitle(window_title)
+        self.setText(window_text)
+        self.exec()
 
 class ScrollMessageBox(QMessageBox):
     def __init__(self, window_title, child_layout):

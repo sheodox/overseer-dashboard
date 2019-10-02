@@ -8,8 +8,6 @@ QPushButton {
     border: 2px solid #1a1e26;
     color: #00bcd4;
     border-radius: 2px;
-    padding-left: 10px;
-    padding-right: 10px;
 }
 QPushButton:hover {
     border: 2px solid #ff00bf;
@@ -59,4 +57,8 @@ QLabel[header=true] {
 }
 [hidden=true] {
     display: none;
+}
+
+#today-details {
+    width: 175px;
 }

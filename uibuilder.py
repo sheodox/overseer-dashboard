@@ -1,7 +1,8 @@
 import re
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QHBoxLayout, QLabel, QGroupBox, QVBoxLayout, QPushButton, QScrollArea
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QGroupBox, QVBoxLayout, QPushButton, QScrollArea, QSizePolicy
 
 
 def get_indent_level(line):
@@ -28,7 +29,7 @@ def parse_line(line):
     attrs = {}
     attr_match, line = next_match(r'\((.*)\)', line)
     if attr_match:
-        for attr in attr_match.split(r'\s*,\s*'):
+        for attr in re.split(r'\s*,\s*', attr_match):
             key, val = attr.split('=')
             attrs[key] = val
 
@@ -69,6 +70,13 @@ class UIBuilder:
         widget = self.by_id(id)
         widget.setStyleSheet(ss)
         self._update_widget(widget)
+
+    def set_icon(self, id, icon_name, size=None):
+        pixmap = QPixmap(f'cache/{icon_name}.png')
+        if size:
+            pixmap = pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.FastTransformation)
+        widget = self.by_id(id)
+        widget.setPixmap(pixmap)
 
     def _update_widget(self, widget):
         self.top.style().unpolish(widget)
@@ -135,6 +143,11 @@ class UIBuilder:
                             "hcenter": Qt.AlignHCenter
                         }
                         w.setAlignment(alignments[attrs['align']])
+                    if 'expanding' in attrs and attrs['expanding'] == 'true':
+                        w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                    if 'style' in attrs:
+                        w.setStyleSheet(attrs['style'])
+                        self._update_widget(w)
                 if text:
                     if hasattr(w, 'setText'):
                         w.setText(text)
