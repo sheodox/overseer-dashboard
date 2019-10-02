@@ -159,7 +159,7 @@ class Dashboard(QWidget):
 
             button = QPushButton(l['name'])
             self.light_buttons[l['id']] = button
-            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            button.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding)
 
             button.clicked.connect(on_click)
             layout.addWidget(button)
