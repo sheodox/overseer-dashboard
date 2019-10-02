@@ -136,6 +136,9 @@ class UIBuilder:
                         "class": class_name
                     })
                 if attrs:
+                    def remove_attr(attr_name):
+                        del attrs[attr_name]
+
                     if 'align' in attrs:
                         alignments = {
                             "left": Qt.AlignLeft,
@@ -143,11 +146,22 @@ class UIBuilder:
                             "hcenter": Qt.AlignHCenter
                         }
                         w.setAlignment(alignments[attrs['align']])
+                        remove_attr('align')
+
                     if 'expanding' in attrs and attrs['expanding'] == 'true':
                         w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                        remove_attr('expanding')
+
                     if 'style' in attrs:
                         w.setStyleSheet(attrs['style'])
                         self._update_widget(w)
+                        remove_attr('style')
+
+                    if len(attrs) > 0:
+                        for key, val in attrs.items():
+                            print(f'k {key}, v {val}')
+                            w.setProperty(key, val)
+
                 if text:
                     if hasattr(w, 'setText'):
                         w.setText(text)
