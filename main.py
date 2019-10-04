@@ -164,7 +164,15 @@ class Dashboard(QWidget):
             button.clicked.connect(on_click)
             layout.addWidget(button)
 
-        for light in self.lights.get_lights():
+        lights = self.lights.get_lights()
+        if len(lights) is 0:
+            self.ui.show('lights-error')
+            self.ui.hide('lights-container')
+        else:
+            self.ui.hide('lights-error')
+            self.ui.show('lights-container')
+
+        for light in lights:
             create_light_button(light)
 
         self.set_light_on_status()

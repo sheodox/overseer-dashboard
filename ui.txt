@@ -2,7 +2,8 @@ QHBoxLayout
     QVBoxLayout
         QLabel#clock-time(align=right)
         QLabel#clock-date(align=right)
-        QGroupBox Lights
+        QLabel#lights-error No lights found!
+        QGroupBox#lights-container Lights
             QVBoxLayout#lights-box
     QGroupBox#weather-box Weather for you
         QVBoxLayout

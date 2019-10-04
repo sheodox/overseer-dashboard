@@ -1,4 +1,5 @@
 import sys
+from urllib.error import URLError
 
 import easy_requests
 from config_reader import ConfigReader
@@ -16,14 +17,18 @@ class Lights:
         print(f'[lights] {msg}')
 
     def refresh(self, data=None):
-        if not data:
-            data = easy_requests.get(f'{self.overseer_url}lights/info')
+        try:
+            if not data:
+                data = easy_requests.get(f'{self.overseer_url}lights/info')
 
-        if 'error' in data:
-            self.log('error retrieving lights information, does overseer trust this device?')
-            sys.exit(-1)
+            if 'error' in data:
+                self.log('error retrieving lights information, does overseer trust this device?')
+                sys.exit(-1)
 
-        self.lights = data
+            self.lights = data
+        except URLError as err:
+            self.log('error reaching overseer')
+            self.log(err)
 
     def get_lights(self):
         return self.lights
