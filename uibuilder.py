@@ -159,7 +159,6 @@ class UIBuilder:
 
                     if len(attrs) > 0:
                         for key, val in attrs.items():
-                            print(f'k {key}, v {val}')
                             w.setProperty(key, val)
 
                 if text:
