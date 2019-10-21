@@ -10,7 +10,7 @@ QPushButton {
     border-radius: 2px;
 }
 QPushButton:hover {
-    border: 2px solid #ff00bf;
+    border: 2px solid #3db4f2;
 }
 QPushButton:pressed {
     color: #8e24aa;
@@ -45,7 +45,9 @@ QGroupBox {
     font-size: 30px;
 }
 #today-alert {
-    color: red;
+    color: black;
+    background-color: red;
+    padding: 5px;
 }
 QScrollArea {
     min-width: 500px;
