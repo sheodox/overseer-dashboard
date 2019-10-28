@@ -137,8 +137,8 @@ class Weather:
             else:
                 return None
 
-        return list(precip for precip in [get_precip_message('rain', now['weather-id'] < 600),
-                get_precip_message('snow', 600 <= now['weather-id'] < 700)] if precip is not None)
+        return (get_precip_message('rain', now['weather-id'] < 600),
+                get_precip_message('snow', 600 <= now['weather-id'] < 700))
 
     def collect_weather_information(self, forecast):
         temps = forecast['main']

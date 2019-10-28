@@ -33,8 +33,8 @@ forecast_day_template = """
                             stretch
                         QLabel#forecast-day-{i}-conditions
                         //like the upcoming precip for today, we could have one or both types of precip, don't leave a gap
-                        QLabel#forecast-day-{i}-precip-0
-                        QLabel#forecast-day-{i}-precip-1
+                        QLabel#forecast-day-{i}-precip-rain
+                        QLabel#forecast-day-{i}-precip-snow
                         stretch
 """
 
@@ -212,8 +212,16 @@ class Dashboard(QWidget):
         else:
             self.ui.hide('today-alert')
 
-        for index, precip_msg in enumerate(self.weather.get_upcoming_precip_message()):
-            self.ui.set_text(f'upcoming-{index}', precip_msg)
+        def set_precip_message(label_id, message):
+            if message is not None:
+                self.ui.set_text(label_id, message)
+                self.ui.show(label_id)
+            else:
+                self.ui.hide(label_id)
+
+        rain_msg, snow_msg = self.weather.get_upcoming_precip_message()
+        set_precip_message('upcoming-rain', rain_msg)
+        set_precip_message('upcoming-snow', snow_msg)
 
         # skip the current day
         for i, day in enumerate(self.weather.get_days()[1:]):
@@ -224,12 +232,9 @@ class Dashboard(QWidget):
             set_temp(f'forecast-day-{i}-high', day, 'high')
             self.ui.set_icon(f'forecast-day-{i}-icon', day['weather-icon'], 50)
 
-            # there might be both types of precip, show one or both, but don't leave a blank line if there's only snow
-            precip_num = 0
             for precip in ['rain', 'snow']:
-                if day[precip] is not None:
-                    self.ui.set_text(f'forecast-day-{i}-precip-{precip_num}', day[precip])
-                    precip_num += 1
+                label_id = f'forecast-day-{i}-precip-{precip}'
+                set_precip_message(label_id, day[precip])
 
     def connect_alert_listener(self, id, alerts):
         def show_weather_alert():
